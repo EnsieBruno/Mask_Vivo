@@ -6,33 +6,33 @@
     <title>Máscara de Atendimento</title>
     <!-- Tailwind CSS for UI styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons for visual affordance -->
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Inter for clean typography -->
+    <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden !important; /* Trava totalmente a barra de rolagem */
             background-color: #f8fafc;
         }
-        /* Custom fine scrollbars for small windows */
+        body {
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+        }
         ::-webkit-scrollbar {
-            width: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
+            display: none; /* Oculta scrollbars internas */
         }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-2 text-slate-800 bg-slate-100">
+<body class="flex items-center justify-center p-2 text-slate-800 bg-slate-100">
 
-    <!-- Container compacto e quadrado para janela reduzida em segundo plano -->
-    <main class="w-full max-w-[380px] bg-white rounded-xl shadow-lg border border-slate-200 p-3 space-y-2.5 text-xs">
+    <!-- Container compacto para janela reduzida -->
+    <main class="w-full max-w-[370px] bg-white rounded-xl shadow-lg border border-slate-200 p-3 space-y-2 text-xs">
         
         <!-- Linha 1: Data de Hoje + CPF lado a lado -->
         <div class="grid grid-cols-2 gap-2">
@@ -47,10 +47,10 @@
             </div>
 
             <div>
-                <label for="input-cpf" class="block text-[11px] font-semibold text-slate-600 mb-0.5">CPF (só números)</label>
+                <label for="input-cpf" class="block text-[11px] font-semibold text-slate-600 mb-0.5">CPF</label>
                 <div class="relative flex items-center">
-                    <input type="text" id="input-cpf" maxlength="11" placeholder="Ex: 12345678900" class="w-full border border-slate-300 rounded-md pl-2 pr-7 py-1 text-xs text-slate-800 placeholder-slate-400 focus:ring-1 focus:ring-indigo-500 focus:outline-none">
-                    <button onclick="copyFieldValue('input-cpf', this)" title="Copiar CPF" class="absolute right-0.5 p-1 text-slate-400 hover:text-indigo-600 rounded transition-colors">
+                    <input type="text" id="input-cpf" maxlength="14" placeholder="000.000.000-00" class="w-full border border-slate-300 rounded-md pl-2 pr-7 py-1 text-xs text-slate-800 placeholder-slate-400 focus:ring-1 focus:ring-indigo-500 focus:outline-none">
+                    <button onclick="copyFieldValue('input-cpf', this)" title="Copiar CPF (só números)" class="absolute right-0.5 p-1 text-slate-400 hover:text-indigo-600 rounded transition-colors">
                         <i class="fa-regular fa-copy text-xs"></i>
                     </button>
                 </div>
@@ -68,7 +68,7 @@
             </div>
         </div>
 
-        <!-- Linha 3: Telefone (Móvel / Fixo inteligente) -->
+        <!-- Linha 3: Telefone (Móvel / Fixo) -->
         <div>
             <div class="flex justify-between items-center mb-0.5">
                 <label for="input-telefone" class="block text-[11px] font-semibold text-slate-600">Telefone / Celular</label>
@@ -93,9 +93,9 @@
             </div>
         </div>
 
-        <!-- Linha 5: Bloco Integrado (Incentivo Lembrete + Caixa IA) -->
+        <!-- Linha 5: Bloco Integrado (Incentivo + Toggle IA ON/OFF) -->
         <div class="bg-amber-50/80 border border-amber-200/80 rounded-lg p-2 flex items-center justify-between gap-2">
-            <!-- Lembrete Incentivo (Sem botão de copiar) -->
+            <!-- Lembrete Incentivo -->
             <div class="flex items-center space-x-1.5 text-amber-900 min-w-0">
                 <i class="fa-solid fa-lightbulb text-amber-500 text-xs shrink-0"></i>
                 <div class="truncate">
@@ -104,25 +104,26 @@
                 </div>
             </div>
 
-            <!-- Toggle Orientação IA -->
+            <!-- Toggle ON / OFF IA -->
             <div class="flex items-center space-x-1.5 shrink-0 pl-2 border-l border-amber-200">
-                <span id="ia-status-text" class="text-[10px] font-medium text-slate-500">IA Pendente</span>
+                <span class="text-[10px] font-semibold text-slate-600">IA:</span>
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" id="check-ia" onchange="toggleIAStatus(this)" class="sr-only peer">
-                    <div class="w-8 h-4.5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    <div class="w-8 h-4.5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-emerald-600"></div>
                 </label>
+                <span id="ia-status-text" class="text-[10px] font-bold text-slate-400 w-6">OFF</span>
             </div>
         </div>
 
-        <!-- Linha 6: Ações finais (Copiar Tudo + Limpar) -->
-        <div class="pt-1 flex items-center justify-between gap-2">
+        <!-- Linha 6: Ações finais -->
+        <div class="pt-0.5 flex items-center justify-between gap-2">
             <!-- Botão Copiar Tudo -->
             <button onclick="copyAllFields(this)" class="flex-1 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium py-1.5 px-3 rounded-lg shadow-sm transition-all flex items-center justify-center space-x-1.5">
                 <i class="fa-solid fa-copy text-xs"></i>
                 <span class="text-xs">Copiar Tudo</span>
             </button>
 
-            <!-- Botão Limpar isolado à direita -->
+            <!-- Botão Limpar -->
             <button onclick="clearAllFields()" class="bg-slate-100 hover:bg-rose-50 active:bg-rose-100 text-slate-600 hover:text-rose-600 border border-slate-200 hover:border-rose-200 font-medium py-1.5 px-2.5 rounded-lg transition-all flex items-center justify-center space-x-1 shrink-0" title="Limpar todos os campos">
                 <i class="fa-solid fa-trash-can text-[11px]"></i>
                 <span class="text-[11px]">Limpar</span>
@@ -138,7 +139,6 @@
     </div>
 
     <script>
-        // Auto-initialize current date on load
         window.addEventListener('DOMContentLoaded', () => {
             setCurrentDate();
             setupFormatters();
@@ -153,19 +153,28 @@
             document.getElementById('input-data').value = `${day}/${month}/${year}`;
         }
 
-        // Sanitização e formatação automática dos campos CPF e Telefone
+        // Formatação inteligente e sanitização
         function setupFormatters() {
             const cpfInput = document.getElementById('input-cpf');
             const phoneInput = document.getElementById('input-telefone');
 
-            // Limpa pontos e traços do CPF instantaneamente
+            // Formata CPF no input para leitura visual, mas aceita com/sem pontuação
             cpfInput.addEventListener('input', (e) => {
-                let val = e.target.value.replace(/\D/g, '');
-                if (val.length > 11) val = val.substring(0, 11);
-                e.target.value = val;
+                let digits = e.target.value.replace(/\D/g, '');
+                if (digits.length > 11) digits = digits.substring(0, 11);
+
+                let formatted = digits;
+                if (digits.length > 3 && digits.length <= 6) {
+                    formatted = `${digits.slice(0, 3)}.${digits.slice(3)}`;
+                } else if (digits.length > 6 && digits.length <= 9) {
+                    formatted = `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+                } else if (digits.length > 9) {
+                    formatted = `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9, 11)}`;
+                }
+                e.target.value = formatted;
             });
 
-            // Formatação inteligente de Telefone (DDD + Celular/Fixo)
+            // Formatação inteligente de Telefone
             phoneInput.addEventListener('input', (e) => {
                 let digits = e.target.value.replace(/\D/g, '');
                 if (digits.length > 11) digits = digits.substring(0, 11);
@@ -198,19 +207,19 @@
             });
         }
 
-        // Atualiza status do toggle de IA
+        // Toggle do status da IA (ON / OFF)
         function toggleIAStatus(checkbox) {
             const statusText = document.getElementById('ia-status-text');
             if (checkbox.checked) {
-                statusText.innerText = 'Orientado';
-                statusText.className = 'text-[10px] font-bold text-indigo-600';
+                statusText.innerText = 'ON';
+                statusText.className = 'text-[10px] font-bold text-emerald-600 w-6';
             } else {
-                statusText.innerText = 'IA Pendente';
-                statusText.className = 'text-[10px] font-medium text-slate-500';
+                statusText.innerText = 'OFF';
+                statusText.className = 'text-[10px] font-bold text-slate-400 w-6';
             }
         }
 
-        // Função genérica de cópia para área de transferência
+        // Função genérica para cópia
         function copyText(text, btnElement = null) {
             if (!text || text.trim() === '') {
                 showToast('Campo vazio', true);
@@ -237,11 +246,15 @@
             document.body.removeChild(textArea);
         }
 
-        // Copia valor individual do campo
+        // Copia valor individual do campo (remove máscara se for o CPF)
         function copyFieldValue(fieldId, btnElement) {
             const field = document.getElementById(fieldId);
             if (field) {
-                copyText(field.value, btnElement);
+                let val = field.value;
+                if (fieldId === 'input-cpf') {
+                    val = val.replace(/\D/g, ''); // Garante APENAS NÚMEROS na cópia do CPF
+                }
+                copyText(val, btnElement);
             }
         }
 
@@ -249,17 +262,21 @@
         function copyAllFields(btnElement) {
             const data = document.getElementById('input-data').value;
             const nome = document.getElementById('input-nome').value.trim() || 'Não informado';
-            const cpf = document.getElementById('input-cpf').value.trim() || 'Não informado';
+            
+            // Garante apenas números no CPF
+            const cpfRaw = document.getElementById('input-cpf').value.replace(/\D/g, '');
+            const cpf = cpfRaw || 'Não informado';
+
             const telefone = document.getElementById('input-telefone').value.trim() || 'Não informado';
             const solicitacao = document.getElementById('input-solicitacao').value.trim() || 'Sem solicitação';
-            const isIAOriented = document.getElementById('check-ia').checked ? 'Orientado' : 'Não Orientado';
+            const iaStatus = document.getElementById('check-ia').checked ? 'ON' : 'OFF';
 
-            const summary = `DATA: ${data}\nNOME: ${nome}\nCPF: ${cpf}\nTELEFONE: ${telefone}\nSOLICITAÇÃO: ${solicitacao}\nIA: ${isIAOriented}\nLEMBRETE: Incentivo 11 999-151515`;
+            const summary = `DATA: ${data}\nNOME: ${nome}\nCPF: ${cpf}\nTELEFONE: ${telefone}\nSOLICITAÇÃO: ${solicitacao}\nIA: ${iaStatus}\nLEMBRETE: Incentivo 11 999-151515`;
 
             copyText(summary, btnElement);
         }
 
-        // Limpa todos os campos editáveis
+        // Limpa todos os campos
         function clearAllFields() {
             document.getElementById('input-nome').value = '';
             document.getElementById('input-cpf').value = '';
@@ -278,7 +295,7 @@
             showToast('Campos limpos');
         }
 
-        // Animação visual no botão de cópia
+        // Animação visual nos botões de cópia
         function animateButton(btn) {
             const icon = btn.querySelector('i');
             if (icon) {
@@ -290,7 +307,7 @@
             }
         }
 
-        // Exibe toast de confirmação
+        // Toast de confirmação
         function showToast(message, isError = false) {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toast-message');
