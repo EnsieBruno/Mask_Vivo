@@ -40,7 +40,7 @@
                 <i class="fa-regular fa-file-lines text-indigo-500"></i>
                 <span id="txt-file-name" class="truncate font-medium">Nenhum TXT vinculado</span>
             </div>
-            <button onclick="selectTxtFile()" title="Selecionar/Alterar arquivo TXT" class="text-indigo-600 hover:text-indigo-800 font-semibold shrink-0 ml-1">
+            <button onclick="selectTxtFile()" title="Selecionar arquivo TXT existente" class="text-indigo-600 hover:text-indigo-800 font-semibold shrink-0 ml-1">
                 <i class="fa-solid fa-folder-open"></i>
             </button>
         </div>
@@ -126,7 +126,7 @@
             </div>
         </div>
 
-        <!-- Linha 6: Ações finais (Salvar no TXT + Limpar) -->
+        <!-- Linha 6: Ações finais -->
         <div class="pt-0.5 flex items-center justify-between gap-2">
             <!-- Botão Salvar no TXT -->
             <button onclick="saveToTxtFile(this)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-medium py-1.5 px-3 rounded-lg shadow-sm transition-all flex items-center justify-center space-x-1.5">
@@ -157,7 +157,6 @@
             setupFormatters();
         });
 
-        // Redimensiona a janela ao tamanho exato do card principal
         window.addEventListener('load', () => {
             autoResizeWindow();
         });
@@ -175,16 +174,17 @@
             window.resizeTo(cardWidth + extraWidth + 16, cardHeight + extraHeight + 16);
         }
 
-        // Seleciona/Vincula o arquivo TXT do Bloco de Notas
+        // Seleciona um TXT existente SEM sobrescrevê-lo
         async function selectTxtFile() {
             try {
-                fileHandle = await window.showSaveFilePicker({
-                    suggestedName: 'atendimentos.txt',
+                const [handle] = await window.showOpenFilePicker({
                     types: [{
                         description: 'Arquivo de Texto (*.txt)',
                         accept: { 'text/plain': ['.txt'] }
-                    }]
+                    }],
+                    multiple: false
                 });
+                fileHandle = handle;
                 document.getElementById('txt-file-name').innerText = fileHandle.name;
                 document.getElementById('txt-file-name').className = 'truncate font-bold text-slate-700';
                 showToast('TXT Vinculado!');
@@ -195,11 +195,11 @@
             }
         }
 
-        // Salva e anexa o carimbo ao arquivo TXT
+        // Anexa o carimbo ao final do arquivo sem apagar nada
         async function saveToTxtFile(btnElement) {
             if (!fileHandle) {
                 await selectTxtFile();
-                if (!fileHandle) return; // Usuário cancelou a seleção
+                if (!fileHandle) return; // Usuário cancelou
             }
 
             const data = document.getElementById('input-data').value;
@@ -213,19 +213,23 @@
             const summary = `DATA: ${data}\nNOME: ${nome}\nCPF: ${cpf}\nTELEFONE: ${telefone}\nSOLICITAÇÃO: ${solicitacao}\nIA: ${iaStatus}\nLEMBRETE: Incentivo 11 999-151515\n----------------------------------------`;
 
             try {
-                // Lê o conteúdo atual para não sobrescrever nada
+                // Pega o tamanho atual do arquivo para saber onde é o final
                 const file = await fileHandle.getFile();
-                const existingText = await file.text();
+                const fileSize = file.size;
 
-                // Concatena o atendimento ao final
-                const newContent = existingText ? `${existingText.trim()}\n\n${summary}` : summary;
+                // Abre o fluxo MANTENDO os dados existentes
+                const writable = await fileHandle.createWritable({ keepExistingData: true });
+                
+                // Move o ponteiro de gravação direto para o FINAL do arquivo
+                await writable.seek(fileSize);
 
-                // Escreve de volta no arquivo
-                const writable = await fileHandle.createWritable();
-                await writable.write(newContent);
+                // Se o arquivo já tiver texto, insere duas quebras de linha antes
+                const textToWrite = fileSize > 0 ? `\n\n${summary}` : summary;
+
+                await writable.write(textToWrite);
                 await writable.close();
 
-                showToast('Salvo no TXT!');
+                showToast('Anexado no TXT!');
                 if (btnElement) animateButton(btnElement);
             } catch (err) {
                 showToast('Erro ao gravar no TXT', true);
@@ -233,7 +237,6 @@
             }
         }
 
-        // Formata data atual (DD/MM/YYYY)
         function setCurrentDate() {
             const today = new Date();
             const day = String(today.getDate()).padStart(2, '0');
@@ -242,7 +245,6 @@
             document.getElementById('input-data').value = `${day}/${month}/${year}`;
         }
 
-        // Formatação inteligente e sanitização
         function setupFormatters() {
             const cpfInput = document.getElementById('input-cpf');
             const phoneInput = document.getElementById('input-telefone');
@@ -294,7 +296,6 @@
             });
         }
 
-        // Toggle do status da IA (ON / OFF)
         function toggleIAStatus(checkbox) {
             const statusText = document.getElementById('ia-status-text');
             if (checkbox.checked) {
@@ -306,7 +307,6 @@
             }
         }
 
-        // Cópia individual de campo
         function copyFieldValue(fieldId, btnElement) {
             const field = document.getElementById(fieldId);
             if (field) {
@@ -344,7 +344,6 @@
             document.body.removeChild(textArea);
         }
 
-        // Limpa todos os campos
         function clearAllFields() {
             document.getElementById('input-nome').value = '';
             document.getElementById('input-cpf').value = '';
@@ -363,7 +362,6 @@
             showToast('Campos limpos');
         }
 
-        // Animação visual nos botões
         function animateButton(btn) {
             const icon = btn.querySelector('i');
             if (icon) {
@@ -375,7 +373,6 @@
             }
         }
 
-        // Toast de confirmação
         function showToast(message, isError = false) {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toast-message');
