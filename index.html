@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Máscara de Atendimento</title>
+    <!-- Tailwind CSS for UI styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons for visual affordance -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter for clean typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        /* Custom fine scrollbars for small windows */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-2 text-slate-800 bg-slate-100">
+
+    <!-- Container compacto e quadrado para janela reduzida em segundo plano -->
+    <main class="w-full max-w-[380px] bg-white rounded-xl shadow-lg border border-slate-200 p-3 space-y-2.5 text-xs">
+        
+        <!-- Linha 1: Data de Hoje + CPF lado a lado -->
+        <div class="grid grid-cols-2 gap-2">
+            <div>
+                <label for="input-data" class="block text-[11px] font-semibold text-slate-600 mb-0.5">Data</label>
+                <div class="relative flex items-center">
+                    <input type="text" id="input-data" readonly class="w-full bg-slate-50 border border-slate-200 rounded-md pl-2 pr-7 py-1 text-slate-700 font-medium text-xs focus:outline-none cursor-default">
+                    <button onclick="copyFieldValue('input-data', this)" title="Copiar Data" class="absolute right-0.5 p-1 text-slate-400 hover:text-indigo-600 rounded transition-colors">
+                        <i class="fa-regular fa-copy text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <label for="input-cpf" class="block text-[11px] font-semibold text-slate-600 mb-0.5">CPF (só números)</label>
+                <div class="relative flex items-center">
+                    <input type="text" id="input-cpf" maxlength="11" placeholder="Ex: 12345678900" class="w-full border border-slate-300 rounded-md pl-2 pr-7 py-1 text-xs text-slate-800 placeholder-slate-400 focus:ring-1 focus:ring-indigo-500 focus:outline-none">
+                    <button onclick="copyFieldValue('input-cpf', this)" title="Copiar CPF" class="absolute right-0.5 p-1 text-slate-400 hover:text-indigo-600 rounded transition-colors">
+                        <i class="fa-regular fa-copy text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Linha 2: Nome do Cliente -->
+        <div>
+            <label for="input-nome" class="block text-[11px] font-semibold text-slate-600 mb-0.5">Nome do Cliente</label>
+            <div class="relative flex items-center">
+                <input type="text" id="input-nome" placeholder="Nome completo" class="w-full border border-slate-300 rounded-md pl-2 pr-7 py-1 text-xs text-slate-800 placeholder-slate-400 focus:ring-1 focus:ring-indigo-500 focus:outline-none">
+                <button onclick="copyFieldValue('input-nome', this)" title="Copiar Nome" class="absolute right-0.5 p-1 text-slate-400 hover:text-indigo-600 rounded transition-colors">
+                    <i class="fa-regular fa-copy text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Linha 3: Telefone (Móvel / Fixo inteligente) -->
+        <div>
+            <div class="flex justify-between items-center mb-0.5">
+                <label for="input-telefone" class="block text-[11px] font-semibold text-slate-600">Telefone / Celular</label>
+                <span id="phone-type-badge" class="text-[9px] font-medium text-slate-400">DDD + Nº</span>
+            </div>
+            <div class="relative flex items-center">
+                <input type="text" id="input-telefone" maxlength="15" placeholder="(00) 00000-0000" class="w-full border border-slate-300 rounded-md pl-2 pr-7 py-1 text-xs text-slate-800 placeholder-slate-400 focus:ring-1 focus:ring-indigo-500 focus:outline-none">
+                <button onclick="copyFieldValue('input-telefone', this)" title="Copiar Telefone" class="absolute right-0.5 p-1 text-slate-400 hover:text-indigo-600 rounded transition-colors">
+                    <i class="fa-regular fa-copy text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Linha 4: Solicitação -->
+        <div>
+            <label for="input-solicitacao" class="block text-[11px] font-semibold text-slate-600 mb-0.5">Solicitação</label>
+            <div class="relative">
+                <textarea id="input-solicitacao" rows="2" placeholder="Resumo da solicitação..." class="w-full border border-slate-300 rounded-md p-2 pr-7 text-xs text-slate-800 placeholder-slate-400 focus:ring-1 focus:ring-indigo-500 focus:outline-none resize-none"></textarea>
+                <button onclick="copyFieldValue('input-solicitacao', this)" title="Copiar Solicitação" class="absolute top-1 right-0.5 p-1 text-slate-400 hover:text-indigo-600 rounded transition-colors">
+                    <i class="fa-regular fa-copy text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Linha 5: Bloco Integrado (Incentivo Lembrete + Caixa IA) -->
+        <div class="bg-amber-50/80 border border-amber-200/80 rounded-lg p-2 flex items-center justify-between gap-2">
+            <!-- Lembrete Incentivo (Sem botão de copiar) -->
+            <div class="flex items-center space-x-1.5 text-amber-900 min-w-0">
+                <i class="fa-solid fa-lightbulb text-amber-500 text-xs shrink-0"></i>
+                <div class="truncate">
+                    <span class="text-[9px] font-bold uppercase tracking-wider text-amber-600 block leading-none">Incentivo</span>
+                    <span class="font-semibold text-[11px] text-amber-900 leading-tight">11 999-151515</span>
+                </div>
+            </div>
+
+            <!-- Toggle Orientação IA -->
+            <div class="flex items-center space-x-1.5 shrink-0 pl-2 border-l border-amber-200">
+                <span id="ia-status-text" class="text-[10px] font-medium text-slate-500">IA Pendente</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="check-ia" onchange="toggleIAStatus(this)" class="sr-only peer">
+                    <div class="w-8 h-4.5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-indigo-600"></div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Linha 6: Ações finais (Copiar Tudo + Limpar) -->
+        <div class="pt-1 flex items-center justify-between gap-2">
+            <!-- Botão Copiar Tudo -->
+            <button onclick="copyAllFields(this)" class="flex-1 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium py-1.5 px-3 rounded-lg shadow-sm transition-all flex items-center justify-center space-x-1.5">
+                <i class="fa-solid fa-copy text-xs"></i>
+                <span class="text-xs">Copiar Tudo</span>
+            </button>
+
+            <!-- Botão Limpar isolado à direita -->
+            <button onclick="clearAllFields()" class="bg-slate-100 hover:bg-rose-50 active:bg-rose-100 text-slate-600 hover:text-rose-600 border border-slate-200 hover:border-rose-200 font-medium py-1.5 px-2.5 rounded-lg transition-all flex items-center justify-center space-x-1 shrink-0" title="Limpar todos os campos">
+                <i class="fa-solid fa-trash-can text-[11px]"></i>
+                <span class="text-[11px]">Limpar</span>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-3 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[11px] px-3 py-1.5 rounded-full shadow-lg flex items-center space-x-1.5 opacity-0 pointer-events-none transition-all duration-300 z-50 whitespace-nowrap">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-xs"></i>
+        <span id="toast-message">Copiado!</span>
+    </div>
+
+    <script>
+        // Auto-initialize current date on load
+        window.addEventListener('DOMContentLoaded', () => {
+            setCurrentDate();
+            setupFormatters();
+        });
+
+        // Formata data atual (DD/MM/YYYY)
+        function setCurrentDate() {
+            const today = new Date();
+            const day = String(today.getDate()).padStart(2, '0');
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const year = today.getFullYear();
+            document.getElementById('input-data').value = `${day}/${month}/${year}`;
+        }
+
+        // Sanitização e formatação automática dos campos CPF e Telefone
+        function setupFormatters() {
+            const cpfInput = document.getElementById('input-cpf');
+            const phoneInput = document.getElementById('input-telefone');
+
+            // Limpa pontos e traços do CPF instantaneamente
+            cpfInput.addEventListener('input', (e) => {
+                let val = e.target.value.replace(/\D/g, '');
+                if (val.length > 11) val = val.substring(0, 11);
+                e.target.value = val;
+            });
+
+            // Formatação inteligente de Telefone (DDD + Celular/Fixo)
+            phoneInput.addEventListener('input', (e) => {
+                let digits = e.target.value.replace(/\D/g, '');
+                if (digits.length > 11) digits = digits.substring(0, 11);
+
+                let formatted = '';
+                const badge = document.getElementById('phone-type-badge');
+
+                if (digits.length > 0) {
+                    if (digits.length <= 2) {
+                        formatted = `(${digits}`;
+                        badge.innerText = 'DDD...';
+                        badge.className = 'text-[9px] font-medium text-amber-500';
+                    } else if (digits.length <= 6) {
+                        formatted = `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+                    } else if (digits.length <= 10) {
+                        formatted = `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+                        badge.innerText = 'Fixo';
+                        badge.className = 'text-[9px] font-medium text-blue-600';
+                    } else {
+                        formatted = `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
+                        badge.innerText = 'Celular';
+                        badge.className = 'text-[9px] font-medium text-emerald-600';
+                    }
+                } else {
+                    badge.innerText = 'DDD + Nº';
+                    badge.className = 'text-[9px] font-medium text-slate-400';
+                }
+
+                e.target.value = formatted;
+            });
+        }
+
+        // Atualiza status do toggle de IA
+        function toggleIAStatus(checkbox) {
+            const statusText = document.getElementById('ia-status-text');
+            if (checkbox.checked) {
+                statusText.innerText = 'Orientado';
+                statusText.className = 'text-[10px] font-bold text-indigo-600';
+            } else {
+                statusText.innerText = 'IA Pendente';
+                statusText.className = 'text-[10px] font-medium text-slate-500';
+            }
+        }
+
+        // Função genérica de cópia para área de transferência
+        function copyText(text, btnElement = null) {
+            if (!text || text.trim() === '') {
+                showToast('Campo vazio', true);
+                return;
+            }
+
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                document.execCommand('copy');
+                showToast('Copiado!');
+                if (btnElement) animateButton(btnElement);
+            } catch (err) {
+                showToast('Erro ao copiar', true);
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        // Copia valor individual do campo
+        function copyFieldValue(fieldId, btnElement) {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                copyText(field.value, btnElement);
+            }
+        }
+
+        // Copia o bloco completo de dados
+        function copyAllFields(btnElement) {
+            const data = document.getElementById('input-data').value;
+            const nome = document.getElementById('input-nome').value.trim() || 'Não informado';
+            const cpf = document.getElementById('input-cpf').value.trim() || 'Não informado';
+            const telefone = document.getElementById('input-telefone').value.trim() || 'Não informado';
+            const solicitacao = document.getElementById('input-solicitacao').value.trim() || 'Sem solicitação';
+            const isIAOriented = document.getElementById('check-ia').checked ? 'Orientado' : 'Não Orientado';
+
+            const summary = `DATA: ${data}\nNOME: ${nome}\nCPF: ${cpf}\nTELEFONE: ${telefone}\nSOLICITAÇÃO: ${solicitacao}\nIA: ${isIAOriented}\nLEMBRETE: Incentivo 11 999-151515`;
+
+            copyText(summary, btnElement);
+        }
+
+        // Limpa todos os campos editáveis
+        function clearAllFields() {
+            document.getElementById('input-nome').value = '';
+            document.getElementById('input-cpf').value = '';
+            document.getElementById('input-telefone').value = '';
+            document.getElementById('input-solicitacao').value = '';
+            
+            const iaCheck = document.getElementById('check-ia');
+            iaCheck.checked = false;
+            toggleIAStatus(iaCheck);
+
+            const phoneBadge = document.getElementById('phone-type-badge');
+            phoneBadge.innerText = 'DDD + Nº';
+            phoneBadge.className = 'text-[9px] font-medium text-slate-400';
+
+            setCurrentDate();
+            showToast('Campos limpos');
+        }
+
+        // Animação visual no botão de cópia
+        function animateButton(btn) {
+            const icon = btn.querySelector('i');
+            if (icon) {
+                const originalClass = icon.className;
+                icon.className = 'fa-solid fa-check text-emerald-500 text-xs';
+                setTimeout(() => {
+                    icon.className = originalClass;
+                }, 1000);
+            }
+        }
+
+        // Exibe toast de confirmação
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            const icon = toast.querySelector('i');
+
+            toastMessage.innerText = message;
+            if (isError) {
+                icon.className = 'fa-solid fa-circle-exclamation text-rose-400 text-xs';
+            } else {
+                icon.className = 'fa-solid fa-circle-check text-emerald-400 text-xs';
+            }
+
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 1800);
+        }
+    </script>
+</body>
+</html>
