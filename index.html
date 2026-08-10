@@ -144,6 +144,28 @@
             setupFormatters();
         });
 
+        // Redimensiona a janela ao tamanho exato do card principal
+        window.addEventListener('load', () => {
+            autoResizeWindow();
+        });
+
+        function autoResizeWindow() {
+            const main = document.querySelector('main');
+            if (!main) return;
+
+            // Calcula o tamanho real da caixa + bordas e barras da janela do SO
+            const cardWidth = main.offsetWidth;
+            const cardHeight = main.offsetHeight;
+
+            const extraWidth = window.outerWidth - window.innerWidth;
+            const extraHeight = window.outerHeight - window.innerHeight;
+
+            const targetWidth = cardWidth + extraWidth + 16;
+            const targetHeight = cardHeight + extraHeight + 16;
+
+            window.resizeTo(targetWidth, targetHeight);
+        }
+
         // Formata data atual (DD/MM/YYYY)
         function setCurrentDate() {
             const today = new Date();
@@ -158,7 +180,7 @@
             const cpfInput = document.getElementById('input-cpf');
             const phoneInput = document.getElementById('input-telefone');
 
-            // Formata CPF no input para leitura visual, mas aceita com/sem pontuação
+            // Formata CPF no input para leitura visual
             cpfInput.addEventListener('input', (e) => {
                 let digits = e.target.value.replace(/\D/g, '');
                 if (digits.length > 11) digits = digits.substring(0, 11);
@@ -252,7 +274,7 @@
             if (field) {
                 let val = field.value;
                 if (fieldId === 'input-cpf') {
-                    val = val.replace(/\D/g, ''); // Garante APENAS NÚMEROS na cópia do CPF
+                    val = val.replace(/\D/g, ''); // APENAS NÚMEROS na cópia do CPF
                 }
                 copyText(val, btnElement);
             }
@@ -263,7 +285,6 @@
             const data = document.getElementById('input-data').value;
             const nome = document.getElementById('input-nome').value.trim() || 'Não informado';
             
-            // Garante apenas números no CPF
             const cpfRaw = document.getElementById('input-cpf').value.replace(/\D/g, '');
             const cpf = cpfRaw || 'Não informado';
 
