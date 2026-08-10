@@ -34,6 +34,17 @@
     <!-- Container compacto para janela reduzida -->
     <main class="w-full max-w-[370px] bg-white rounded-xl shadow-lg border border-slate-200 p-3 space-y-2 text-xs">
         
+        <!-- Indicator de arquivo TXT vinculado -->
+        <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-md px-2 py-1 text-[10px] text-slate-500">
+            <div class="flex items-center space-x-1 truncate">
+                <i class="fa-regular fa-file-lines text-indigo-500"></i>
+                <span id="txt-file-name" class="truncate font-medium">Nenhum TXT vinculado</span>
+            </div>
+            <button onclick="selectTxtFile()" title="Selecionar/Alterar arquivo TXT" class="text-indigo-600 hover:text-indigo-800 font-semibold shrink-0 ml-1">
+                <i class="fa-solid fa-folder-open"></i>
+            </button>
+        </div>
+
         <!-- Linha 1: Data de Hoje + CPF lado a lado -->
         <div class="grid grid-cols-2 gap-2">
             <div>
@@ -115,12 +126,12 @@
             </div>
         </div>
 
-        <!-- Linha 6: Ações finais -->
+        <!-- Linha 6: Ações finais (Salvar no TXT + Limpar) -->
         <div class="pt-0.5 flex items-center justify-between gap-2">
-            <!-- Botão Copiar Tudo -->
-            <button onclick="copyAllFields(this)" class="flex-1 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium py-1.5 px-3 rounded-lg shadow-sm transition-all flex items-center justify-center space-x-1.5">
-                <i class="fa-solid fa-copy text-xs"></i>
-                <span class="text-xs">Copiar Tudo</span>
+            <!-- Botão Salvar no TXT -->
+            <button onclick="saveToTxtFile(this)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-medium py-1.5 px-3 rounded-lg shadow-sm transition-all flex items-center justify-center space-x-1.5">
+                <i class="fa-solid fa-floppy-disk text-xs"></i>
+                <span class="text-xs">Salvar no TXT</span>
             </button>
 
             <!-- Botão Limpar -->
@@ -135,10 +146,12 @@
     <!-- Notification Toast -->
     <div id="toast" class="fixed bottom-3 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[11px] px-3 py-1.5 rounded-full shadow-lg flex items-center space-x-1.5 opacity-0 pointer-events-none transition-all duration-300 z-50 whitespace-nowrap">
         <i class="fa-solid fa-circle-check text-emerald-400 text-xs"></i>
-        <span id="toast-message">Copiado!</span>
+        <span id="toast-message">Salvo no TXT!</span>
     </div>
 
     <script>
+        let fileHandle = null;
+
         window.addEventListener('DOMContentLoaded', () => {
             setCurrentDate();
             setupFormatters();
@@ -153,17 +166,71 @@
             const main = document.querySelector('main');
             if (!main) return;
 
-            // Calcula o tamanho real da caixa + bordas e barras da janela do SO
             const cardWidth = main.offsetWidth;
             const cardHeight = main.offsetHeight;
 
             const extraWidth = window.outerWidth - window.innerWidth;
             const extraHeight = window.outerHeight - window.innerHeight;
 
-            const targetWidth = cardWidth + extraWidth + 16;
-            const targetHeight = cardHeight + extraHeight + 16;
+            window.resizeTo(cardWidth + extraWidth + 16, cardHeight + extraHeight + 16);
+        }
 
-            window.resizeTo(targetWidth, targetHeight);
+        // Seleciona/Vincula o arquivo TXT do Bloco de Notas
+        async function selectTxtFile() {
+            try {
+                fileHandle = await window.showSaveFilePicker({
+                    suggestedName: 'atendimentos.txt',
+                    types: [{
+                        description: 'Arquivo de Texto (*.txt)',
+                        accept: { 'text/plain': ['.txt'] }
+                    }]
+                });
+                document.getElementById('txt-file-name').innerText = fileHandle.name;
+                document.getElementById('txt-file-name').className = 'truncate font-bold text-slate-700';
+                showToast('TXT Vinculado!');
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    showToast('Erro ao selecionar arquivo', true);
+                }
+            }
+        }
+
+        // Salva e anexa o carimbo ao arquivo TXT
+        async function saveToTxtFile(btnElement) {
+            if (!fileHandle) {
+                await selectTxtFile();
+                if (!fileHandle) return; // Usuário cancelou a seleção
+            }
+
+            const data = document.getElementById('input-data').value;
+            const nome = document.getElementById('input-nome').value.trim() || 'Não informado';
+            const cpfRaw = document.getElementById('input-cpf').value.replace(/\D/g, '');
+            const cpf = cpfRaw || 'Não informado';
+            const telefone = document.getElementById('input-telefone').value.trim() || 'Não informado';
+            const solicitacao = document.getElementById('input-solicitacao').value.trim() || 'Sem solicitação';
+            const iaStatus = document.getElementById('check-ia').checked ? 'ON' : 'OFF';
+
+            const summary = `DATA: ${data}\nNOME: ${nome}\nCPF: ${cpf}\nTELEFONE: ${telefone}\nSOLICITAÇÃO: ${solicitacao}\nIA: ${iaStatus}\nLEMBRETE: Incentivo 11 999-151515\n----------------------------------------`;
+
+            try {
+                // Lê o conteúdo atual para não sobrescrever nada
+                const file = await fileHandle.getFile();
+                const existingText = await file.text();
+
+                // Concatena o atendimento ao final
+                const newContent = existingText ? `${existingText.trim()}\n\n${summary}` : summary;
+
+                // Escreve de volta no arquivo
+                const writable = await fileHandle.createWritable();
+                await writable.write(newContent);
+                await writable.close();
+
+                showToast('Salvo no TXT!');
+                if (btnElement) animateButton(btnElement);
+            } catch (err) {
+                showToast('Erro ao gravar no TXT', true);
+                console.error(err);
+            }
         }
 
         // Formata data atual (DD/MM/YYYY)
@@ -180,7 +247,6 @@
             const cpfInput = document.getElementById('input-cpf');
             const phoneInput = document.getElementById('input-telefone');
 
-            // Formata CPF no input para leitura visual
             cpfInput.addEventListener('input', (e) => {
                 let digits = e.target.value.replace(/\D/g, '');
                 if (digits.length > 11) digits = digits.substring(0, 11);
@@ -196,7 +262,6 @@
                 e.target.value = formatted;
             });
 
-            // Formatação inteligente de Telefone
             phoneInput.addEventListener('input', (e) => {
                 let digits = e.target.value.replace(/\D/g, '');
                 if (digits.length > 11) digits = digits.substring(0, 11);
@@ -241,7 +306,18 @@
             }
         }
 
-        // Função genérica para cópia
+        // Cópia individual de campo
+        function copyFieldValue(fieldId, btnElement) {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                let val = field.value;
+                if (fieldId === 'input-cpf') {
+                    val = val.replace(/\D/g, '');
+                }
+                copyText(val, btnElement);
+            }
+        }
+
         function copyText(text, btnElement = null) {
             if (!text || text.trim() === '') {
                 showToast('Campo vazio', true);
@@ -268,35 +344,6 @@
             document.body.removeChild(textArea);
         }
 
-        // Copia valor individual do campo (remove máscara se for o CPF)
-        function copyFieldValue(fieldId, btnElement) {
-            const field = document.getElementById(fieldId);
-            if (field) {
-                let val = field.value;
-                if (fieldId === 'input-cpf') {
-                    val = val.replace(/\D/g, ''); // APENAS NÚMEROS na cópia do CPF
-                }
-                copyText(val, btnElement);
-            }
-        }
-
-        // Copia o bloco completo de dados
-        function copyAllFields(btnElement) {
-            const data = document.getElementById('input-data').value;
-            const nome = document.getElementById('input-nome').value.trim() || 'Não informado';
-            
-            const cpfRaw = document.getElementById('input-cpf').value.replace(/\D/g, '');
-            const cpf = cpfRaw || 'Não informado';
-
-            const telefone = document.getElementById('input-telefone').value.trim() || 'Não informado';
-            const solicitacao = document.getElementById('input-solicitacao').value.trim() || 'Sem solicitação';
-            const iaStatus = document.getElementById('check-ia').checked ? 'ON' : 'OFF';
-
-            const summary = `DATA: ${data}\nNOME: ${nome}\nCPF: ${cpf}\nTELEFONE: ${telefone}\nSOLICITAÇÃO: ${solicitacao}\nIA: ${iaStatus}\nLEMBRETE: Incentivo 11 999-151515`;
-
-            copyText(summary, btnElement);
-        }
-
         // Limpa todos os campos
         function clearAllFields() {
             document.getElementById('input-nome').value = '';
@@ -316,12 +363,12 @@
             showToast('Campos limpos');
         }
 
-        // Animação visual nos botões de cópia
+        // Animação visual nos botões
         function animateButton(btn) {
             const icon = btn.querySelector('i');
             if (icon) {
                 const originalClass = icon.className;
-                icon.className = 'fa-solid fa-check text-emerald-500 text-xs';
+                icon.className = 'fa-solid fa-check text-white text-xs';
                 setTimeout(() => {
                     icon.className = originalClass;
                 }, 1000);
